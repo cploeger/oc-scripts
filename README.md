@@ -30,5 +30,6 @@ This script does a full backup of your ownCloud. The backup contains
 | oc-backup.sh | /var/www          | /backups/owncloud | owncloud@example.com | /tmp                      |
 |              | **mandatory**     | **mandatory**     | **mandatory**        | _optional (default /tmp)_ |
 
-so the complete call would look like this 
+so the complete call would look like this
+
 **sudo -u \<oc-user\> \<install directory\> \<target directory\> \<mail recipient\> [\<temporary directory\>]**
