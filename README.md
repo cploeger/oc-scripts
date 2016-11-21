@@ -14,8 +14,6 @@ For a while the script grew a lot and it wasn't readable any more. Before I deci
 
 After the script looked terrible and I always messed up with the parameters, I realized that I had to rewrite the script from scratch. After doing so the backup script only has two mandatory parameters and a lot of information is fetched by using the occ command.
 
-Besides the backup script I also wrote a script that checks if an update is available and another one which automates the process of updating your ownCloud.
-
 ## Using the scripts
 
 ### /backup/oc-backup.sh
@@ -27,9 +25,10 @@ This script does a full backup of your ownCloud. The backup contains
 
 **CAUTION:** You need to run this command as the user that is used for running your ownCloud (e.g. oc-user)
 
-| command                        | install directory | target directory  | mail recipient       | temporary directory             | 
-| ------------------------------ | ----------------- | ----------------- | -------------------- | ------------------------------- |
-| sudo -u oc-user ./oc-backup.sh | /var/www          | /backups/owncloud | owncloud@example.com | /tmp                            |
-|                                | **mandatory**     | **mandatory**     | **mandatory**        | _optional (default /tmp)_ |
+| command      | install directory | target directory  | mail recipient       | temporary directo         | 
+| ------------ | ----------------- | ----------------- | -------------------- | ------------------------- |
+| oc-backup.sh | /var/www          | /backups/owncloud | owncloud@example.com | /tmp                      |
+|              | **mandatory**     | **mandatory**     | **mandatory**        | _optional (default /tmp)_ |
 
-so the complete call would look like this **sudo -u \<oc-user\> \<install directory\> \<target directory\> \<mail recipient\> [\<temporary directory\>]**
+so the complete call would look like this 
+**sudo -u \<oc-user\> \<install directory\> \<target directory\> \<mail recipient\> [\<temporary directory\>]**
