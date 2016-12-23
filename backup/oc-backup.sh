@@ -143,8 +143,9 @@ create_backup() {
   # enabling maintenance mode
   if errormsg=$("$oc_instdir/occ" --no-warnings --quiet maintenance:mode --on 2>&1 >/dev/null); then
     oc_offline_start=$(date "+%d.%m.%Y %H:%M:%S")
+    maintenance=true
     # data backup
-    if errormsg=$(rsync -Aax "${occonfig[0]}" "$backupdir/oc-backup-$timestamp" 2>&1 >/dev/null); then
+    if errormsg=$(rsync -Aakx "${occonfig[0]}" "$backupdir/oc-backup-$timestamp" 2>&1 >/dev/null); then
       # cleaning up the snapshot of the data directory
       if cleanup_snapshot; then
         # config backup
@@ -160,6 +161,7 @@ create_backup() {
               errormsg=$("$oc_instdir/occ" --no-warnings --quiet maintenance:mode --off 2>&1 >/dev/null)
               if [ -z "$errormsg" ]; then
                 oc_offline_end=$(date "+%d.%m.%Y %H:%M:%S")
+                maintenance=false
                 cd "$backupdir/oc-backup-$timestamp" || return 1
                 errormsg=$(tar czf "../oc-backup-$timestamp.tar.gz" . 2>&1 >/dev/null)
                 if [ -z "$errormsg" ]; then
@@ -263,6 +265,9 @@ timestamp=$(date --date="@$tsp_start" "+%Y%m%d_%H%M")
 # initialization of the array that stores error messages
 msg_error=()
 
+# maintenance mode is supposed to be off
+maintenance=false
+
 # check if the user entered the right number of parameters
 if parameter_check "$@"; then
   # create temporary directory
@@ -302,6 +307,15 @@ if parameter_check "$@"; then
   fi
 fi
 
+# turn maintenance mode off if it is still active
+if [ $maintenance == true ]; then
+  errormsg=$("$oc_instdir/occ" --no-warnings --quiet maintenance:mode --off 2>&1 >/dev/null)
+  if [ -n "$errormsg" ]; then
+    msg_error+=("!!! WARNING: YOUR OWNCLOUD INSTALLATION IS STILL IN MAINTENANCE MODE AND CANNOT BE ACCESSED !!!")
+    msg_error+=("Error occured while turning off maintenance mode: $errormsg")
+  fi
+fi
+
 num_error=${#msg_error[@]}
 if [ "$num_error" -eq 0 ]; then
   rm "$lockfile"
@@ -321,7 +335,7 @@ if [ "$num_error" -eq 0 ]; then
   } >> "$tempdir/oc-backup-$timestamp/oc-message.txt"
   mail -s "ownCloud backup on host '$(hostname -f)' finished successfully" "$mailRecipient" < "$tempdir/oc-backup-$timestamp/oc-message.txt"
   # at the end delete the temporary directory
-  rm -r "$tempdir/oc-backup-$timestamp"    
+  rm -r "$tempdir/oc-backup-$timestamp"
 else
   echo -e "ownCloud backup on host '$(hostname -f)' failed. The following errors occured:\n" > "$tempdir/oc-backup-$timestamp/oc-message.txt"
   while [ "$num_error" -gt 0 ]; do
@@ -342,7 +356,7 @@ else
       fi
     fi
   fi
-  
+
   exit 1
 fi
 exit 0
